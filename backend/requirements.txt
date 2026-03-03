@@ -2,4 +2,5 @@ flask
 flask-cors
 azure-identity
 azure-mgmt-costmanagement
-requests
+numpy
+scikit-learn
