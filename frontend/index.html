@@ -121,51 +121,65 @@ let chart;
 
 async function fetchData() {
     const usage = document.getElementById("usageInput").value;
-    if (!usage) return alert("Enter cost value");
+
+    if (!usage || usage <= 0) {
+        alert("Please enter valid cost value");
+        return;
+    }
 
     document.getElementById("loader").style.display = "block";
 
-    const response = await fetch(`http://127.0.0.1:5000/predict/${usage}`);
-    const data = await response.json();
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/predict/${usage}`);
 
-    document.getElementById("current").innerText = "₹ " + data.current_cost;
-    document.getElementById("predicted").innerText = "₹ " + data.predicted_cost;
+        if (!response.ok) throw new Error("Server issue");
 
-    const percentageChange = (((data.predicted_cost - data.current_cost) / data.current_cost) * 100).toFixed(2);
+        const data = await response.json();
 
-    const health = document.getElementById("healthIndicator");
+        document.getElementById("current").innerText = "₹ " + data.current_cost;
+        document.getElementById("predicted").innerText = "₹ " + data.predicted_cost;
 
-    if (percentageChange > 12) {
-        health.innerText = "🔴 Cost Risk: High";
-        health.style.color = "red";
-    } else if (percentageChange > 6) {
-        health.innerText = "🟡 Cost Risk: Moderate";
-        health.style.color = "orange";
-    } else {
-        health.innerText = "🟢 Cost Stable";
-        health.style.color = "green";
-    }
+        const percentageChange = (((data.predicted_cost - data.current_cost) / data.current_cost) * 100).toFixed(2);
 
-    const ctx = document.getElementById("costChart").getContext("2d");
+        const health = document.getElementById("healthIndicator");
 
-    if (chart) chart.destroy();
-
-    chart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: ["Current Cost", "Next Month"],
-            datasets: [{
-                label: "Cloud Cost Trend",
-                data: [data.current_cost, data.predicted_cost],
-                borderColor: "#2563eb",
-                fill: true
-            }]
+        if (percentageChange > 12) {
+            health.innerText = "🔴 Cost Risk: High";
+            health.style.color = "red";
+        } else if (percentageChange > 6) {
+            health.innerText = "🟡 Cost Risk: Moderate";
+            health.style.color = "orange";
+        } else {
+            health.innerText = "🟢 Cost Stable";
+            health.style.color = "green";
         }
-    });
+
+        const ctx = document.getElementById("costChart").getContext("2d");
+
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: ["Current Cost", "Next Month"],
+                datasets: [{
+                    label: "Cloud Cost Trend",
+                    data: [data.current_cost, data.predicted_cost],
+                    borderColor: "#2563eb",
+                    backgroundColor: "rgba(37,99,235,0.2)",
+                    tension: 0.4,
+                    fill: true
+                }]
+            }
+        });
+
+    } catch (error) {
+        document.getElementById("recommendation").innerText =
+            "⚠ Server error. Please try again.";
+    }
 
     document.getElementById("loader").style.display = "none";
 }
-
 function toggleDarkMode() {
     document.body.classList.toggle("dark");
     const btn = document.getElementById("themeButton");
