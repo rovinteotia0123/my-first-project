@@ -5,6 +5,8 @@ from azure.mgmt.costmanagement import CostManagementClient
 from ml.model import predict_cost
 import os
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
