@@ -106,3 +106,8 @@ Deploy on cloud platform
 Improve ML model accuracy
 
 Add database for storing past records
+
+## Contribution
+Backend development, ML integration, and API validation handled by Hitesh Kumar.  
+Frontend dashboard and UI handled by Rovin Teotia.
+
