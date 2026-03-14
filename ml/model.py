@@ -1,16 +1,18 @@
-import numpy as np
+import pandas as pd
 from sklearn.linear_model import LinearRegression
 
-# Simulated historical cost trend
-current_cost = np.array([[1000], [2000], [3000], [4000], [5000]])
-next_month_cost = np.array([1080, 2150, 3150, 4300, 5500])
+# load dataset
+data = pd.read_csv("ml/cloud_cost.csv")
 
-# Train model
+# use columns (monthly dataset works like this)
+X = data[['UsageQuantity']]
+y = data['Cost']
+
 model = LinearRegression()
-model.fit(current_cost, next_month_cost)
+model.fit(X, y)
 
 def predict_cost(new_cost):
-    # input validation added
+
     if new_cost <= 0:
         return 0
 
