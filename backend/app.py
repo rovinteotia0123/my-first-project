@@ -58,13 +58,12 @@ def get_cost():
         })
 
     except Exception:
-    simulated_cost = 3500
-
-    return jsonify({
-        "current_cost": simulated_cost,
-        "predicted_cost": round(predict_cost(simulated_cost), 2),
-        "recommendation": "Azure unavailable. Using simulated data for prediction."
-    })
+        simulated_cost = 3500
+        return jsonify({
+            "current_cost": simulated_cost,
+            "predicted_cost": round(predict_cost(simulated_cost), 2),
+            "recommendation": "Azure unavailable. Using simulated data for prediction."
+            })
 
 
 @app.route("/auth-test")
