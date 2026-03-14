@@ -98,7 +98,7 @@ def predict_usage(usage):
     return jsonify({
         "current_cost": usage,
         "predicted_cost": round(predicted, 2),
-        "recommendation": "Optimize unused resources if cost increases"
+        "Optimize resources and monitor unused services"
     })
 
 
