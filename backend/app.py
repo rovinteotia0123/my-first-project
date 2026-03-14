@@ -18,6 +18,9 @@ def home():
 
 @app.route("/cost")
 def get_cost():
+
+    print("Azure cost fetch attempted")   # 👈 WRITE HERE
+
     try:
         # -------- AZURE COST FETCH LOGIC --------
         credential = ClientSecretCredential(
@@ -83,12 +86,19 @@ def auth_test():
 
 @app.route("/predict/<int:usage>")
 def predict_usage(usage):
+
+    # validation added
+    if usage <= 0:
+        return jsonify({"error": "Invalid input value"})
+
     predicted = predict_cost(usage)
+
+    print("Prediction executed for:", usage)  # logging added
 
     return jsonify({
         "current_cost": usage,
         "predicted_cost": round(predicted, 2),
-        "recommendation": "Reduce unused VMs if cost is increasing"
+        "recommendation": "Optimize unused resources if cost increases"
     })
 
 
