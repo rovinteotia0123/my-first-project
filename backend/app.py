@@ -80,7 +80,11 @@ def auth_test():
         return jsonify({"status": "Azure Authentication Successful"})
 
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({
+            "status": "failed",
+            "message": "Azure authentication error",
+            "details": str(e)
+        })
 
 
 @app.route("/predict/<int:usage>")
