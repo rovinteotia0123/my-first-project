@@ -1,6 +1,0 @@
-flask
-flask-cors
-azure-identity
-azure-mgmt-costmanagement
-numpy
-scikit-learn
