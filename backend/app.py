@@ -2,6 +2,9 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from azure.identity import ClientSecretCredential
 from azure.mgmt.costmanagement import CostManagementClient
+import sys
+sys.path.append(".")
+
 from ml.model import predict_cost
 import os
 from datetime import datetime, timedelta

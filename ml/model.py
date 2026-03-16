@@ -4,17 +4,18 @@ from sklearn.linear_model import LinearRegression
 # load dataset
 data = pd.read_csv("ml/cloud_cost.csv")
 
-# use columns (monthly dataset works like this)
-X = data[['UsageQuantity']]
-y = data['Cost']
+# scale small values better
+X = data[['total_net_cost']]
+y = data['total_projected_monthly_cost']
 
 model = LinearRegression()
 model.fit(X, y)
 
 def predict_cost(new_cost):
 
-    if new_cost <= 0:
-        return 0
+    # 👉 adjust small demo inputs
+    if new_cost < 500:
+        new_cost = new_cost * 5
 
     prediction = model.predict([[new_cost]])
 
