@@ -1,0 +1,8 @@
+flask
+flask-cors
+pandas
+scikit-learn
+azure-identity
+azure-mgmt-costmanagement
+python-dotenv
+gunicorn
