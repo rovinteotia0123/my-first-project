@@ -1,190 +1,159 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Cloud Cost Intelligence Dashboard</title>
+    <title>Cloud AI Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         body {
-            font-family: Arial;
-            background: #f4f6f9;
             margin: 0;
-            padding: 20px;
-            transition: background 0.4s ease, color 0.4s ease;
+            font-family: 'Segoe UI';
+            display: flex;
+            background: #0f172a;
+            color: white;
         }
 
-        .card-container {
+        .sidebar {
+            width: 220px;
+            background: #020617;
+            padding: 20px;
+            height: 100vh;
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar button {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #1e293b;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .cards {
             display: flex;
-            justify-content: space-around;
-            margin-top: 30px;
+            gap: 20px;
         }
 
         .card {
-            background: linear-gradient(135deg, #ffffff, #f1f5f9);
-            padding: 25px;
-            width: 280px;
-            border-radius: 16px;
-            box-shadow: 0 12px 25px rgba(0,0,0,0.08);
-            text-align: center;
-            transition: all 0.3s ease;
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
         }
 
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 18px 35px rgba(0,0,0,0.12);
+        canvas {
+            margin-top: 30px;
+            background: white;
+            border-radius: 10px;
         }
 
-        .card h3 {
-            font-size: 13px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: 10px;
-        }
-
-        .card p {
-            font-size: 28px;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .dark {
-            background: #0f172a !important;
-            color: #f1f5f9 !important;
-        }
-
-        .dark .card {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
-            color: #f1f5f9;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 5px solid #ddd;
-            border-top: 5px solid #2563eb;
-            border-radius: 50%;
-            margin: auto;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        input, button {
+            padding: 8px;
+            margin-top: 10px;
         }
     </style>
 </head>
 
 <body>
 
-<div style="display:flex; justify-content:space-between; padding:15px 30px; background:#111827; color:white;">
-    <div style="font-weight:600;">☁ CloudAI Platform</div>
-    <button id="themeButton" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+<div class="sidebar">
+    <h2>☁ CloudAI</h2>
+    <button onclick="loadCost()">Dashboard</button>
+    <button onclick="loadHistory()">History</button>
 </div>
 
-<h1 style="text-align:center; margin-top:30px;">Autonomous Cloud Cost Intelligence</h1>
-<p style="text-align:center;">AI-Driven Cost Prediction & Self-Optimizing Infrastructure</p>
+<div class="main">
 
-<div class="card-container">
+<h2>Cloud Cost Intelligence</h2>
+
+<div class="cards">
     <div class="card">
-        <h3>Current Cost</h3>
-        <p id="current">₹ --</p>
+        <h4>Current Cost</h4>
+        <h2 id="current">--</h2>
     </div>
 
     <div class="card">
-        <h3>Predicted Cost</h3>
-        <p id="predicted">₹ --</p>
+        <h4>Predicted Cost</h4>
+        <h2 id="predicted">--</h2>
     </div>
 
     <div class="card">
-        <h3>Recommendation</h3>
-        <p id="recommendation">--</p>
-        <div id="healthIndicator" style="margin-top:10px; font-weight:600;"></div>
+        <h4>Recommendation</h4>
+        <p id="rec">--</p>
     </div>
 </div>
 
-<center style="margin-top:30px;">
-    <input type="number" id="usageInput" placeholder="Enter Current Cost (₹)">
-    <br><br>
-    <button onclick="fetchData()">Predict Cost</button>
-</center>
+<br>
 
-<div id="loader" style="display:none; text-align:center; margin-top:20px;">
-    <div class="spinner"></div>
-    <p>Analyzing cloud cost using AI...</p>
+<input id="usage" type="number" placeholder="Enter cost">
+<button onclick="predict()">Predict</button>
+
+<canvas id="chart"></canvas>
+
 </div>
-
-<canvas id="costChart"></canvas>
 
 <script>
 let chart;
 
-async function fetchData() {
-    const usage = document.getElementById("usageInput").value;
+async function loadCost() {
+    const res = await fetch("/cost");
+    const data = await res.json();
 
-    if (!usage || usage <= 0) {
-        alert("Please enter valid cost value");
-        return;
-    }
+    current.innerText = "₹ " + data.current_cost;
+    predicted.innerText = "₹ " + data.predicted_cost;
+    rec.innerText = data.recommendation;
+}
 
-    document.getElementById("loader").style.display = "block";
+async function predict() {
+    const res = await fetch(`/predict/${usage.value}`);
+    const data = await res.json();
 
-    try {
-        const response = await fetch(`http://127.0.0.1:5000/predict/${usage}`);
+    current.innerText = "₹ " + data.current_cost;
+    predicted.innerText = "₹ " + data.predicted_cost;
+    rec.innerText = data.recommendation;
 
-        if (!response.ok) throw new Error("Server issue");
+    drawChart([data.current_cost, data.predicted_cost]);
+}
 
-        const data = await response.json();
+async function loadHistory() {
+    const res = await fetch("/history");
+    const data = await res.json();
 
-        document.getElementById("current").innerText = "₹ " + data.current_cost;
-        document.getElementById("predicted").innerText = "₹ " + data.predicted_cost;
+    const costs = data.map(d => d[1]);
+    const predicted = data.map(d => d[2]);
 
-        const percentageChange = (((data.predicted_cost - data.current_cost) / data.current_cost) * 100).toFixed(2);
+    drawChart(costs, predicted);
+}
 
-        const health = document.getElementById("healthIndicator");
+function drawChart(costs, predicted=[]) {
+    const ctx = document.getElementById("chart");
 
-        if (percentageChange > 12) {
-            health.innerText = "🔴 Cost Risk: High";
-            health.style.color = "red";
-        } else if (percentageChange > 6) {
-            health.innerText = "🟡 Cost Risk: Moderate";
-            health.style.color = "orange";
-        } else {
-            health.innerText = "🟢 Cost Stable";
-            health.style.color = "green";
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: costs.map((_, i) => "Point " + (i+1)),
+            datasets: [
+                { label: "Current", data: costs, borderColor: "blue" },
+                { label: "Predicted", data: predicted, borderColor: "green" }
+            ]
         }
-
-        const ctx = document.getElementById("costChart").getContext("2d");
-
-        if (chart) chart.destroy();
-
-        chart = new Chart(ctx, {
-            type: "line",
-            data: {
-                labels: ["Current Cost", "Next Month"],
-                datasets: [{
-                    label: "Cloud Cost Trend",
-                    data: [data.current_cost, data.predicted_cost],
-                    borderColor: "#2563eb",
-                    backgroundColor: "rgba(37,99,235,0.2)",
-                    tension: 0.4,
-                    fill: true
-                }]
-            }
-        });
-
-    } catch (error) {
-        document.getElementById("recommendation").innerText =
-            "⚠ Server error. Please try again.";
-    }
-
-    document.getElementById("loader").style.display = "none";
+    });
 }
-function toggleDarkMode() {
-    document.body.classList.toggle("dark");
-    const btn = document.getElementById("themeButton");
-    btn.innerText = document.body.classList.contains("dark") ? "Toggle Light Mode" : "Toggle Dark Mode";
-}
+
+window.onload = loadCost;
 </script>
 
 </body>
