@@ -1,9 +1,14 @@
 import pandas as pd
+import os
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 
-data = pd.read_csv("ml/cloud_cost.csv")
+# FIXED PATH
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+file_path = os.path.join(BASE_DIR, "ml", "cloud_cost.csv")
+
+data = pd.read_csv(file_path)
 
 X = data[['total_net_cost']]
 y = data['total_projected_monthly_cost']
