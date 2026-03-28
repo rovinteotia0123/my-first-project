@@ -3,7 +3,6 @@
 <head>
     <title>Cloud AI Dashboard</title>
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -36,20 +35,54 @@
             text-align: center;
         }
 
+        .light .card {
+            background: #f1f5f9;
+            color: black;
+        }
+
         input, button {
             padding: 10px;
             margin-top: 10px;
         }
 
+        .light input {
+            background: white;
+            color: black;
+            border: 1px solid #ccc;
+        }
+
+        .light button {
+            background: #2563eb;
+            color: white;
+        }
+
         .toggle {
             float: right;
+        }
+
+        #dashboard {
+            display: none;
+        }
+
+        #loginBox {
+            text-align: center;
+            margin-top: 100px;
         }
     </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- LOGIN UI -->
+<div id="loginBox">
+    <h2>Login</h2>
+    <input id="user" placeholder="Username"><br>
+    <input id="pass" type="password" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="container">
 
     <button class="toggle" onclick="toggleTheme()">Light Mode</button>
 
@@ -75,7 +108,9 @@
     <br>
 
     <input id="usage" type="number" placeholder="Enter cost (100 - 5000)">
+    <br>
     <button onclick="predict()">Predict</button>
+    <button onclick="loadHistory()">Show History</button>
 
     <canvas id="chart"></canvas>
 
@@ -85,15 +120,33 @@
 let chart;
 const BASE_URL = "http://127.0.0.1:5000";
 
+// 🔐 LOGIN
+async function login() {
+    const username = document.getElementById("user").value;
+    const password = document.getElementById("pass").value;
+
+    const res = await fetch(`${BASE_URL}/login`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username, password})
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        loadCost();
+    } else {
+        alert("Invalid credentials");
+    }
+}
+
 // LOAD COST
 async function loadCost() {
-    try {
-        const res = await fetch(`${BASE_URL}/cost`);
-        const data = await res.json();
-        updateUI(data);
-    } catch {
-        alert("Backend not running");
-    }
+    const res = await fetch(`${BASE_URL}/cost`);
+    const data = await res.json();
+    updateUI(data);
 }
 
 // PREDICT
@@ -117,27 +170,30 @@ function updateUI(data) {
     document.getElementById("current").innerText = "₹ " + data.current_cost;
     document.getElementById("predicted").innerText = "₹ " + data.predicted_cost;
 
-    const change = ((data.predicted_cost - data.current_cost) / data.current_cost) * 100;
+    const diff = data.predicted_cost - data.current_cost;
 
-    let risk = "";
-    let color = "";
+let risk = "";
+let color = "";
 
-    if (change > 10) {
-        risk = "🔴 High Risk";
-        color = "red";
-    } else if (change > 5) {
-        risk = "🟡 Moderate";
-        color = "orange";
-    } else {
-        risk = "🟢 Stable";
-        color = "green";
-    }
+// 🔥 FINAL BALANCED LOGIC
+if (diff <= 200) {
+    risk = "Stable";
+    color = "green";
+} 
+else if (diff <= 1000) {
+    risk = "Moderate Risk";
+    color = "orange";
+} 
+else {
+    risk = "High Risk";
+    color = "red";
+}
 
     document.getElementById("rec").innerHTML =
         data.recommendation + "<br><b style='color:" + color + "'>" + risk + "</b>";
 }
 
-// DRAW CHART
+// BAR CHART
 function drawChart(currentCost, predictedCost) {
     const ctx = document.getElementById("chart");
 
@@ -156,6 +212,50 @@ function drawChart(currentCost, predictedCost) {
     });
 }
 
+// HISTORY
+async function loadHistory() {
+    const res = await fetch(`${BASE_URL}/history`);
+    const data = await res.json();
+
+    if (!data.length) {
+        alert("No history available");
+        return;
+    }
+
+    const costs = data.map(d => d[0]);
+    const predicted = data.map(d => d[1]);
+
+    drawHistoryChart(costs, predicted);
+}
+
+// HISTORY CHART
+function drawHistoryChart(costs, predicted) {
+    const ctx = document.getElementById("chart");
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: costs.map((_, i) => "Run " + (i + 1)),
+            datasets: [
+                {
+                    label: "Current Cost",
+                    data: costs,
+                    borderColor: "blue",
+                    fill: false
+                },
+                {
+                    label: "Predicted Cost",
+                    data: predicted,
+                    borderColor: "green",
+                    fill: false
+                }
+            ]
+        }
+    });
+}
+
 // THEME TOGGLE
 function toggleTheme() {
     document.body.classList.toggle("light");
@@ -165,9 +265,6 @@ function toggleTheme() {
         ? "Dark Mode"
         : "Light Mode";
 }
-
-// AUTO LOAD
-window.onload = loadCost;
 </script>
 
 </body>

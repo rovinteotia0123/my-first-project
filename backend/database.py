@@ -34,7 +34,7 @@ def get_history():
     conn = sqlite3.connect("cost.db")
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM cost_history ORDER BY timestamp DESC LIMIT 10")
+    cursor.execute("SELECT current_cost, predicted_cost, timestamp FROM cost_history ORDER BY timestamp DESC LIMIT 10")
     data = cursor.fetchall()
 
     conn.close()
