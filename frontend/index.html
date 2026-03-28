@@ -2,41 +2,24 @@
 <html>
 <head>
     <title>Cloud AI Dashboard</title>
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body {
             margin: 0;
-            font-family: 'Segoe UI';
-            display: flex;
+            font-family: Arial;
             background: #0f172a;
             color: white;
         }
 
-        .sidebar {
-            width: 220px;
-            background: #020617;
-            padding: 20px;
-            height: 100vh;
+        .light {
+            background: #ffffff;
+            color: black;
         }
 
-        .sidebar h2 {
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
-
-        .sidebar button {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #1e293b;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-
-        .main {
-            flex: 1;
+        .container {
             padding: 20px;
         }
 
@@ -50,109 +33,140 @@
             padding: 20px;
             border-radius: 10px;
             flex: 1;
-        }
-
-        canvas {
-            margin-top: 30px;
-            background: white;
-            border-radius: 10px;
+            text-align: center;
         }
 
         input, button {
-            padding: 8px;
+            padding: 10px;
             margin-top: 10px;
+        }
+
+        .toggle {
+            float: right;
         }
     </style>
 </head>
 
 <body>
 
-<div class="sidebar">
-    <h2>☁ CloudAI</h2>
-    <button onclick="loadCost()">Dashboard</button>
-    <button onclick="loadHistory()">History</button>
-</div>
+<div class="container">
 
-<div class="main">
+    <button class="toggle" onclick="toggleTheme()">Light Mode</button>
 
-<h2>Cloud Cost Intelligence</h2>
+    <h2>Cloud Cost Intelligence Dashboard</h2>
 
-<div class="cards">
-    <div class="card">
-        <h4>Current Cost</h4>
-        <h2 id="current">--</h2>
+    <div class="cards">
+        <div class="card">
+            <h4>Current Cost</h4>
+            <h2 id="current">--</h2>
+        </div>
+
+        <div class="card">
+            <h4>Predicted Cost</h4>
+            <h2 id="predicted">--</h2>
+        </div>
+
+        <div class="card">
+            <h4>Recommendation</h4>
+            <p id="rec">--</p>
+        </div>
     </div>
 
-    <div class="card">
-        <h4>Predicted Cost</h4>
-        <h2 id="predicted">--</h2>
-    </div>
+    <br>
 
-    <div class="card">
-        <h4>Recommendation</h4>
-        <p id="rec">--</p>
-    </div>
-</div>
+    <input id="usage" type="number" placeholder="Enter cost (100 - 5000)">
+    <button onclick="predict()">Predict</button>
 
-<br>
-
-<input id="usage" type="number" placeholder="Enter cost">
-<button onclick="predict()">Predict</button>
-
-<canvas id="chart"></canvas>
+    <canvas id="chart"></canvas>
 
 </div>
 
 <script>
 let chart;
+const BASE_URL = "http://127.0.0.1:5000";
 
+// LOAD COST
 async function loadCost() {
-    const res = await fetch("/cost");
-    const data = await res.json();
-
-    current.innerText = "₹ " + data.current_cost;
-    predicted.innerText = "₹ " + data.predicted_cost;
-    rec.innerText = data.recommendation;
+    try {
+        const res = await fetch(`${BASE_URL}/cost`);
+        const data = await res.json();
+        updateUI(data);
+    } catch {
+        alert("Backend not running");
+    }
 }
 
+// PREDICT
 async function predict() {
-    const res = await fetch(`/predict/${usage.value}`);
+    const value = document.getElementById("usage").value;
+
+    if (!value || value < 100) {
+        alert("Enter realistic cost (>=100)");
+        return;
+    }
+
+    const res = await fetch(`${BASE_URL}/predict/${value}`);
     const data = await res.json();
 
-    current.innerText = "₹ " + data.current_cost;
-    predicted.innerText = "₹ " + data.predicted_cost;
-    rec.innerText = data.recommendation;
-
-    drawChart([data.current_cost, data.predicted_cost]);
+    updateUI(data);
+    drawChart(data.current_cost, data.predicted_cost);
 }
 
-async function loadHistory() {
-    const res = await fetch("/history");
-    const data = await res.json();
+// UPDATE UI
+function updateUI(data) {
+    document.getElementById("current").innerText = "₹ " + data.current_cost;
+    document.getElementById("predicted").innerText = "₹ " + data.predicted_cost;
 
-    const costs = data.map(d => d[1]);
-    const predicted = data.map(d => d[2]);
+    const change = ((data.predicted_cost - data.current_cost) / data.current_cost) * 100;
 
-    drawChart(costs, predicted);
+    let risk = "";
+    let color = "";
+
+    if (change > 10) {
+        risk = "🔴 High Risk";
+        color = "red";
+    } else if (change > 5) {
+        risk = "🟡 Moderate";
+        color = "orange";
+    } else {
+        risk = "🟢 Stable";
+        color = "green";
+    }
+
+    document.getElementById("rec").innerHTML =
+        data.recommendation + "<br><b style='color:" + color + "'>" + risk + "</b>";
 }
 
-function drawChart(costs, predicted=[]) {
+// DRAW CHART
+function drawChart(currentCost, predictedCost) {
     const ctx = document.getElementById("chart");
 
     if (chart) chart.destroy();
 
     chart = new Chart(ctx, {
-        type: "line",
+        type: "bar",
         data: {
-            labels: costs.map((_, i) => "Point " + (i+1)),
-            datasets: [
-                { label: "Current", data: costs, borderColor: "blue" },
-                { label: "Predicted", data: predicted, borderColor: "green" }
-            ]
+            labels: ["Current", "Predicted"],
+            datasets: [{
+                label: "Cost Comparison",
+                data: [currentCost, predictedCost],
+                backgroundColor: ["#3b82f6", "#10b981"]
+            }]
         }
     });
 }
 
+// THEME TOGGLE
+function toggleTheme() {
+    document.body.classList.toggle("light");
+
+    const btn = document.querySelector(".toggle");
+    btn.innerText = document.body.classList.contains("light")
+        ? "Dark Mode"
+        : "Light Mode";
+}
+
+// AUTO LOAD
 window.onload = loadCost;
 </script>
 

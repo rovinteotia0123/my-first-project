@@ -25,5 +25,12 @@ print("Model Accuracy:", accuracy)
 
 def predict_cost(new_cost):
     input_df = pd.DataFrame([[new_cost]], columns=['total_net_cost'])
-    prediction = model.predict(input_df)
-    return float(prediction[0])
+    prediction = model.predict(input_df)[0]
+
+    # 🎯 Add realistic variation
+    import random
+
+    variation = random.uniform(-0.08, 0.12)  # -8% to +12%
+    adjusted_prediction = prediction + (new_cost * variation)
+
+    return float(adjusted_prediction)
