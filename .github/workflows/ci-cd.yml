@@ -9,19 +9,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
-      run: |
+    - run: |
         pip install --upgrade pip
         pip install -r backend/requirements.txt
 
-    - name: Run Backend Test
+    - name: Test ML Model
       run: |
-        python backend/app.py
+        python -c "from ml.model import predict_cost; print(predict_cost(1000))"
