@@ -121,7 +121,7 @@
 let chart;
 const BASE_URL = "http://127.0.0.1:5000";
 
-// 🔐 LOGIN
+// LOGIN
 async function login() {
     const username = document.getElementById("user").value;
     const password = document.getElementById("pass").value;
@@ -139,12 +139,12 @@ async function login() {
             document.getElementById("loginBox").style.display = "none";
             document.getElementById("dashboard").style.display = "block";
             loadCost();
-            loadHistory(); // ✅ auto load
+            loadHistory();
         } else {
             alert("Invalid credentials");
         }
 
-    } catch (err) {
+    } catch {
         alert("Server error");
     }
 }
@@ -181,7 +181,7 @@ async function predict() {
     }
 }
 
-// UPDATE UI (FIXED)
+// UPDATE UI
 function updateUI(data) {
     document.getElementById("current").innerText = "₹ " + data.current_cost;
     document.getElementById("predicted").innerText = "₹ " + data.predicted_cost;
@@ -236,7 +236,7 @@ function drawChart(currentCost, predictedCost) {
     });
 }
 
-// HISTORY (FIXED)
+// HISTORY
 async function loadHistory() {
     try {
         const res = await fetch(`${BASE_URL}/history`);
@@ -247,8 +247,8 @@ async function loadHistory() {
             return;
         }
 
-        const costs = data.map(d => d[1]);      // ✅ FIXED
-        const predicted = data.map(d => d[2]);  // ✅ FIXED
+        const costs = data.map(d => d[1]);
+        const predicted = data.map(d => d[2]);
 
         drawHistoryChart(costs, predicted);
 
