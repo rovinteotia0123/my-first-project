@@ -1,0 +1,24 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - run: |
+        pip install --upgrade pip
+        pip install -r backend/requirements.txt
+
+    - name: Test ML Model
+      run: |
+        python -c "from ml.model import predict_cost; print(predict_cost(1000))"
