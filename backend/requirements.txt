@@ -3,9 +3,8 @@ flask-cors
 python-dotenv
 werkzeug
 gunicorn
-
 pandas
 scikit-learn
-
+numpy
 azure-identity
 azure-mgmt-costmanagement
