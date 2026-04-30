@@ -1,344 +1,721 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Cloud AI Dashboard</title>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Cloud Cost Intelligence Dashboard
+    </title>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body {
-            margin: 0;
-            font-family: Arial;
-            background: #0f172a;
-            color: white;
-        }
 
-        .light {
-            background: #ffffff;
-            color: black;
+        body {
+
+            margin: 0;
+            padding: 0;
+
+            font-family: Arial, sans-serif;
+
+            background: #020617;
+
+            color: white;
         }
 
         .container {
+
             padding: 20px;
-        }
-
-        .cards {
-            display: flex;
-            gap: 20px;
-        }
-
-        .card {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 10px;
-            flex: 1;
-            text-align: center;
-        }
-
-        .light .card {
-            background: #f1f5f9;
-            color: black;
-        }
-
-        input, button {
-            padding: 10px;
-            margin-top: 10px;
-        }
-
-        .light input {
-            background: white;
-            color: black;
-            border: 1px solid #ccc;
-        }
-
-        .light button {
-            background: #2563eb;
-            color: white;
-        }
-
-        .toggle {
-            float: right;
         }
 
         #dashboard {
+
             display: none;
         }
 
         #loginBox {
+
+            height: 100vh;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+        }
+
+        input {
+
+            width: 250px;
+
+            padding: 12px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            margin-top: 10px;
+
+            outline: none;
+        }
+
+        button {
+
+            padding: 12px 20px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            margin-top: 15px;
+
+            background: #2563eb;
+
+            color: white;
+
+            font-weight: bold;
+        }
+
+        .cards {
+
+            display: flex;
+
+            gap: 20px;
+
+            margin-top: 30px;
+        }
+
+        .card {
+
+            flex: 1;
+
+            background: #1e293b;
+
+            border-radius: 12px;
+
+            padding: 20px;
+
             text-align: center;
-            margin-top: 100px;
         }
 
         table {
+
             width: 100%;
-            margin-top: 20px;
+
             border-collapse: collapse;
+
+            margin-top: 30px;
         }
 
         th, td {
-            padding: 10px;
+
+            border: 1px solid #334155;
+
+            padding: 12px;
+
             text-align: center;
         }
 
         th {
+
             background: #1e293b;
         }
 
-        .light th {
-            background: #ddd;
+        canvas {
+
+            background: #0f172a;
+
+            border-radius: 16px;
+
+            padding: 20px;
+
+            margin-top: 30px;
+
+            height: 420px !important;
         }
+
     </style>
+
 </head>
 
 <body>
 
-<!-- LOGIN -->
+
+
+<!-- LOGIN PAGE -->
+
 <div id="loginBox">
-    <h2>Login</h2>
-    <input id="user" placeholder="Username"><br>
-    <input id="pass" type="password" placeholder="Password"><br>
-    <button onclick="login()">Login</button>
+
+    <h1>
+        Cloud Cost Intelligence Dashboard
+    </h1>
+
+    <p style="color:gray;">
+        AI Based Cloud Cost Prediction System
+    </p>
+
+    <input
+        type="text"
+        id="username"
+        placeholder="Username"
+    >
+
+    <input
+        type="password"
+        id="password"
+        placeholder="Password"
+    >
+
+    <button onclick="login()">
+        Login
+    </button>
+
 </div>
 
+
+
 <!-- DASHBOARD -->
+
 <div id="dashboard" class="container">
 
-    <button class="toggle" onclick="toggleTheme()">Light Mode</button>
+    <div
+        style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        "
+    >
 
-    <h2>Cloud Cost Intelligence Dashboard</h2>
-    <p style="color:#94a3b8;">AI-based cloud cost prediction and optimization system</p>
+        <h1>
+            Cloud Cost Intelligence Dashboard
+        </h1>
 
-    <div class="cards">
-        <div class="card">
-            <h4>Current Cost</h4>
-            <h2 id="current">--</h2>
-        </div>
+        <button
+            onclick="logout()"
+            style="background:red;"
+        >
+            Logout
+        </button>
 
-        <div class="card">
-            <h4>Predicted Cost</h4>
-            <h2 id="predicted">--</h2>
-        </div>
-
-        <div class="card">
-            <h4>Recommendation</h4>
-            <p id="rec">--</p>
-        </div>
     </div>
 
-    <br>
 
-    <input id="usage" type="number" placeholder="Enter cost (100 - 100000)">
-    <br>
-    <button onclick="predict()">Predict</button>
+    <p style="color:#94a3b8;">
+        Monitor and Predict Cloud Infrastructure Cost
+    </p>
 
-    <canvas id="chart"></canvas>
 
-    <h3>History</h3>
+
+    <!-- CARDS -->
+
+    <div class="cards">
+
+        <div class="card">
+
+            <h2>
+                Current Cost
+            </h2>
+
+            <h1 id="currentCost">
+                ₹ 0
+            </h1>
+
+        </div>
+
+        <div class="card">
+
+            <h2>
+                Predicted Cost
+            </h2>
+
+            <h1 id="predictedCost">
+                ₹ 0
+            </h1>
+
+        </div>
+
+        <div class="card">
+
+            <h2>
+                Recommendation
+            </h2>
+
+            <p id="recommendation">
+                --
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- INPUT -->
+
+    <div style="margin-top:30px;">
+
+        <input
+            type="number"
+            id="usageInput"
+            placeholder="Enter Usage Cost"
+        >
+
+        <button onclick="predictCost()">
+            Predict
+        </button>
+
+    </div>
+
+
+
+    <!-- CHART -->
+
+    <canvas id="costChart"></canvas>
+
+
+
+    <!-- HISTORY -->
+
+    <h2 style="margin-top:40px;">
+        Prediction History
+    </h2>
+
     <table id="historyTable">
+
         <tr>
-            <th>Current</th>
-            <th>Predicted</th>
-            <th>Time</th>
+
+            <th>
+                Current Cost
+            </th>
+
+            <th>
+                Predicted Cost
+            </th>
+
+            <th>
+                Time
+            </th>
+
         </tr>
+
     </table>
 
 </div>
 
+
+
 <script>
-let chart;
-const BASE_URL = "http://127.0.0.1:5000";
+
+console.log("JS RUNNING");
+
+
+const BASE_URL =
+    "http://127.0.0.1:5000";
+
+
+let chart = null;
+
+
 
 // LOGIN
+
 async function login() {
-    const username = user.value;
-    const password = pass.value;
+
+    const username =
+        document.getElementById("username").value;
+
+    const password =
+        document.getElementById("password").value;
 
     try {
-        const res = await fetch(`${BASE_URL}/login`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({username, password})
-        });
 
-        const data = await res.json();
+        const response =
+            await fetch(
+                `${BASE_URL}/login`,
+                {
 
-        if (data.status === "success") {
-            loginBox.style.display = "none";
-            dashboard.style.display = "block";
-            loadCost();
-            loadHistory();
-        } else {
-            alert("Invalid credentials");
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                }
+            );
+
+        if (!response.ok) {
+
+            alert("Invalid Username or Password");
+
+            return;
         }
 
-    } catch {
-        alert("Server error");
+        document.getElementById("loginBox")
+            .style.display = "none";
+
+        document.getElementById("dashboard")
+            .style.display = "block";
+
+        loadDefaultCost();
+
+        loadHistory();
+
+    }
+
+    catch(error) {
+
+        console.log(error);
+
+        alert("Backend Not Running");
     }
 }
 
-// LOAD COST
-async function loadCost() {
+
+
+// LOGOUT
+
+function logout() {
+
+    document.getElementById("dashboard")
+        .style.display = "none";
+
+    document.getElementById("loginBox")
+        .style.display = "flex";
+}
+
+
+
+// LOAD DEFAULT COST
+
+async function loadDefaultCost() {
+
     try {
-        const res = await fetch(`${BASE_URL}/cost`);
-        const data = await res.json();
+
+        const response =
+            await fetch(`${BASE_URL}/cost`);
+
+        const data =
+            await response.json();
+
         updateUI(data);
-    } catch {
-        alert("Backend not running");
+
+        drawChart(
+            data.current_cost,
+            data.predicted_cost
+        );
+
+    }
+
+    catch(error) {
+
+        console.log(error);
     }
 }
+
+
 
 // PREDICT
-async function predict() {
-    const value = usage.value;
 
-    if (!value || value < 100 || value > 100000) {
-        alert("Enter valid cost (100 - 100000)");
+async function predictCost() {
+
+    const usage =
+        document.getElementById("usageInput").value;
+
+    if (
+        usage === ""
+        || usage <= 0
+    ) {
+
+        alert("Enter Valid Cost");
+
         return;
     }
 
-    rec.innerText = "Analyzing...";
-
     try {
-        const res = await fetch(`${BASE_URL}/predict/${value}`);
 
-        if (!res.ok) throw new Error("Server error");
+        const response =
+            await fetch(
+                `${BASE_URL}/predict/${usage}`
+            );
 
-        const data = await res.json();
+        const data =
+            await response.json();
 
         updateUI(data);
-        drawChart(data.current_cost, data.predicted_cost);
+
+        drawChart(
+            data.current_cost,
+            data.predicted_cost
+        );
+
         loadHistory();
 
-    } catch {
-        alert("Error connecting backend");
+    }
+
+    catch(error) {
+
+        console.log(error);
+
+        alert("Prediction Failed");
     }
 }
+
+
 
 // UPDATE UI
+
 function updateUI(data) {
-    current.innerText = "₹ " + data.current_cost;
-    predicted.innerText = "₹ " + data.predicted_cost;
 
-    current.style.color = "#3b82f6";
-    predicted.style.color = "#10b981";
+    document.getElementById("currentCost")
+        .innerHTML =
+        `₹ ${data.current_cost}`;
 
-    const diff = data.predicted_cost - data.current_cost;
-    const percent = ((diff / data.current_cost) * 100).toFixed(2);
+    document.getElementById("predictedCost")
+        .innerHTML =
+        `₹ ${data.predicted_cost}`;
 
-    let risk = "";
-    let color = "";
-
-    if (diff > 800) {
-        risk = "🔴 High Risk";
-        color = "red";
-    } else if (diff > 200) {
-        risk = "🟡 Moderate Risk";
-        color = "orange";
-    } else {
-        risk = "🟢 Stable";
-        color = "green";
-    }
-
-    rec.innerHTML =
-        data.recommendation +
-        `<br><b style="color:${color}">${risk}</b>` +
-        `<br><small>Change: ${percent}%</small>`;
+    document.getElementById("recommendation")
+        .innerHTML =
+        data.recommendation;
 }
 
-// BAR CHART
-function drawChart(currentCost, predictedCost) {
-    const ctx = document.getElementById("chart");
 
-    if (chart) chart.destroy();
+
+// CHART
+
+function drawChart(current, predicted) {
+
+    const ctx =
+        document.getElementById("costChart");
+
+    if (chart) {
+
+        chart.destroy();
+    }
 
     chart = new Chart(ctx, {
-        type: "bar",
+
+        type: "line",
+
         data: {
-            labels: ["Current", "Predicted"],
-            datasets: [{
-                label: "Cost Comparison",
-                data: [currentCost, predictedCost],
-                backgroundColor: ["#3b82f6", "#10b981"]
-            }]
+
+            labels: [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun"
+            ],
+
+            datasets: [
+
+                {
+
+                    label: "Current Cost",
+
+                    data: [
+                        2000,
+                        3200,
+                        2800,
+                        4500,
+                        current,
+                        3800
+                    ],
+
+                    borderColor: "#3b82f6",
+
+                    backgroundColor: "rgba(59,130,246,0.15)",
+
+                    fill: false,
+
+                    tension: 0.15,
+
+                    borderWidth: 4,
+
+                    pointRadius: 4,
+
+                    pointHoverRadius: 7,
+
+                    pointBackgroundColor: "#3b82f6",
+
+                    pointBorderColor: "#ffffff"
+                },
+
+                {
+
+                    label: "Predicted Cost",
+
+                    data: [
+                        2500,
+                        4000,
+                        3500,
+                        5000,
+                        predicted,
+                        4200
+                    ],
+
+                    borderColor: "#22c55e",
+
+                    backgroundColor: "rgba(34,197,94,0.12)",
+
+                    fill: false,
+
+                    tension: 0.15,
+
+                    borderWidth: 4,
+
+                    pointRadius: 4,
+
+                    pointHoverRadius: 7,
+
+                    pointBackgroundColor: "#22c55e",
+
+                    pointBorderColor: "#ffffff"
+                }
+            ]
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            plugins: {
+
+                legend: {
+
+                    labels: {
+
+                        color: "white",
+
+                        font: {
+
+                            size: 14
+                        }
+                    }
+                }
+            },
+
+            scales: {
+
+                x: {
+
+                    ticks: {
+
+                        color: "#cbd5e1",
+
+                        font: {
+
+                            size: 13
+                        }
+                    },
+
+                    grid: {
+
+                        color: "rgba(255,255,255,0.05)"
+                    }
+                },
+
+                y: {
+
+                    min: 1500,
+
+                    max: 5500,
+
+                    ticks: {
+
+                        color: "#cbd5e1",
+
+                        font: {
+
+                            size: 13
+                        }
+                    },
+
+                    grid: {
+
+                        color: "rgba(255,255,255,0.05)"
+                    }
+                }
+            }
         }
     });
 }
 
-// HISTORY
-async function loadHistory() {
-    try {
-        const res = await fetch(`${BASE_URL}/history`);
-        const data = await res.json();
 
-        const table = document.getElementById("historyTable");
+
+
+// HISTORY
+
+async function loadHistory() {
+
+    try {
+
+        const response =
+            await fetch(`${BASE_URL}/history`);
+
+        const data =
+            await response.json();
+
+        const table =
+            document.getElementById("historyTable");
 
         table.innerHTML = `
+
             <tr>
-                <th>Current</th>
-                <th>Predicted</th>
+
+                <th>Current Cost</th>
+
+                <th>Predicted Cost</th>
+
                 <th>Time</th>
+
             </tr>
+
         `;
 
-        if (!data.length) return;
-
         data.forEach(row => {
+
             table.innerHTML += `
+
                 <tr>
-                    <td>${row[1]}</td>
+
+                    <td>₹ ${row[0]}</td>
+
+                    <td>₹ ${row[1]}</td>
+
                     <td>${row[2]}</td>
-                    <td>${row[3]}</td>
+
                 </tr>
+
             `;
         });
 
-        const costs = data.map(d => d[1]);
-        const predicted = data.map(d => d[2]);
+    }
 
-        drawHistoryChart(costs, predicted);
+    catch(error) {
 
-    } catch {
-        alert("Error loading history");
+        console.log(error);
     }
 }
 
-// HISTORY CHART
-function drawHistoryChart(costs, predicted) {
-    const ctx = document.getElementById("chart");
-
-    if (chart) chart.destroy();
-
-    chart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: costs.map((_, i) => "Run " + (i + 1)),
-            datasets: [
-                {
-                    label: "Current Cost",
-                    data: costs,
-                    borderColor: "blue",
-                    fill: false
-                },
-                {
-                    label: "Predicted Cost",
-                    data: predicted,
-                    borderColor: "green",
-                    fill: false
-                }
-            ]
-        }
-    });
-}
-
-// THEME
-function toggleTheme() {
-    document.body.classList.toggle("light");
-
-    const btn = document.querySelector(".toggle");
-    btn.innerText = document.body.classList.contains("light")
-        ? "Dark Mode"
-        : "Light Mode";
-}
 </script>
 
 </body>
